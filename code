@@ -1,0 +1,96 @@
+import os
+from tkinter import (
+    Tk, filedialog, Button, Label, OptionMenu, StringVar, IntVar, Entry, Checkbutton
+)
+from tkinter import messagebox
+from PIL import Image
+
+# Supported formats
+FORMATS = ["PNG", "JPG", "BMP", "GIF"]
+
+class ImageConverterApp:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("Image Converter")
+        self.root.geometry("400x350")
+        self.files = []
+
+        # GUI Elements
+        Label(root, text="Select Output Format:").pack(pady=5)
+        self.format_var = StringVar(value=FORMATS[0])
+        OptionMenu(root, self.format_var, *FORMATS).pack()
+
+        Label(root, text="Resize (Width x Height):").pack(pady=5)
+        self.width_entry = Entry(root)
+        self.width_entry.pack(padx=5)
+        self.height_entry = Entry(root)
+        self.height_entry.pack(padx=5)
+
+        self.quality = IntVar(value=85)
+        Checkbutton(root, text="Enable JPEG Compression", variable=self.quality).pack(pady=5)
+
+        Button(root, text="Select Images", command=self.select_images).pack(pady=5)
+        Button(root, text="Select Output Folder", command=self.select_output_folder).pack(pady=5)
+        Button(root, text="Convert", command=self.convert_images).pack(pady=10)
+
+        self.output_folder = None
+
+    def select_images(self):
+        files = filedialog.askopenfilenames(
+            title="Select Images",
+            filetypes=[("Image Files", "*.jpg *.jpeg *.png *.bmp *.gif")]
+        )
+        if files:
+            self.files = list(files)
+            messagebox.showinfo("Selected", f"{len(self.files)} image(s) selected.")
+
+    def select_output_folder(self):
+        folder = filedialog.askdirectory(title="Select Output Folder")
+        if folder:
+            self.output_folder = folder
+            messagebox.showinfo("Folder Selected", folder)
+
+    def convert_images(self):
+        if not self.files:
+            messagebox.showerror("Error", "No images selected.")
+            return
+        if not self.output_folder:
+            messagebox.showerror("Error", "No output folder selected.")
+            return
+
+        resize = None
+        if self.width_entry.get() and self.height_entry.get():
+            try:
+                resize = (int(self.width_entry.get()), int(self.height_entry.get()))
+            except ValueError:
+                messagebox.showerror("Error", "Invalid dimensions.")
+                return
+
+        format_selected = self.format_var.get().lower()
+        quality = self.quality.get()
+
+        for img_path in self.files:
+            try:
+                img = Image.open(img_path)
+                filename = os.path.splitext(os.path.basename(img_path))[0]
+                out_path = os.path.join(self.output_folder, f"{filename}.{format_selected}")
+
+                if resize:
+                    img = img.resize(resize, Image.Resampling.LANCZOS)
+
+                if format_selected in ['jpg', 'jpeg']:
+                    img = img.convert("RGB")
+                    img.save(out_path, format_selected.upper(), quality=quality)
+                else:
+                    img.save(out_path, format_selected.upper())
+
+                print(f"Converted: {img_path} -> {out_path}")
+            except Exception as e:
+                print(f"Error converting {img_path}: {e}")
+
+        messagebox.showinfo("Done", "Conversion completed!")
+
+if __name__ == "__main__":
+    root = Tk()
+    app = ImageConverterApp(root)
+    root.mainloop()
