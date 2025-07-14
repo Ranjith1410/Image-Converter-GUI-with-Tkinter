@@ -1,8 +1,6 @@
 # Image-Converter
-Sure! Here's a detailed and polished `README.md` content for your **Image Converter GUI** project on GitHub:
 
 ---
-
 # 🖼️ Image Converter GUI (Python + Tkinter)
 
 A simple and efficient **Image Converter Application** built with **Python**, featuring a **Tkinter GUI** for ease of use. It allows users to convert images between various formats (JPG, PNG, BMP, GIF, etc.) with additional functionality like batch processing, resizing, and compression.
